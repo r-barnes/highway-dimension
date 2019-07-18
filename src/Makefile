@@ -1,7 +1,7 @@
 CXX = g++
-CXXFLAGS = -std=c++14 -O2 -Wall -pedantic
-OBJECT_FILES = graph.o dijkstra.o highway-dimension.o
-BIN_FILES = main.out
+CXXFLAGS = -std=c++14 -O2 -Wall -pedantic -g
+OBJECT_FILES = graph.o dijkstra.o highway-dimension.o hitting-set.o
+BIN_FILES = main.out hitting-set-test.out
 
 all: $(BIN_FILES)
 
@@ -20,4 +20,6 @@ clean-all: clean
 dijkstra.o: dijkstra.cpp graph.h dijkstra.h
 graph.o: graph.cpp graph.h
 highway-dimension.o: highway-dimension.cpp highway-dimension.h graph.h
+hitting-set.o: hitting-set.cpp hitting-set.h graph.h
+hitting-set-test.o: hitting-set-test.cpp graph.h hitting-set.h
 main.o: main.cpp graph.h
