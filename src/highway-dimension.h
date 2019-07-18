@@ -4,6 +4,6 @@
 #include "graph.h"
 
 int
-approximateHd(Graph& graph, int radius);
+approximateHd(Graph& graph);
 
 #endif /* __HIGHWAY_DIMENSION__ */

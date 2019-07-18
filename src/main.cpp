@@ -10,15 +10,11 @@ main(int argc, char* argv[])
   scanf("%d%d", &N, &M);
 
   Graph G(N);
-  std::unordered_set<int> edgeWeights;
 
   for (int i = 0; i < M; ++i) {
     int u, v, w;
     scanf("%d%d%d", &u, &v, &w);
-    G.neighborList[u].push_back({v, w});
-    G.neighborList[v].push_back({u, w});
-    edgeWeights.insert(w);
+    G[u].push_back({v, w});
+    G[v].push_back({u, w});
   }
-
-
 }

@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++14 -O2 -Wall -pedantic
-OBJECT_FILES = graph.o dijkstra.o
+OBJECT_FILES = graph.o dijkstra.o highway-dimension.o
 BIN_FILES = main.out
 
 all: $(BIN_FILES)
