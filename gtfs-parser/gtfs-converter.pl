@@ -2,18 +2,69 @@
 
 use strict;
 use warnings;
+use FindBin;
+use lib "$FindBin::Bin";
+use CsvUtils;
 
-# TODO: might not be consistent across all GTFS feeds
-my ($TRIP_ID_I, $ARRIVAL_TIME_I, $DEPARTURE_TIME_I, $STOP_ID_I) = (0, 1, 2, 3);
+my $GTFS_SEP = ',';
 
-if (@ARGV < 1) {
-  die "Provide stop_times.txt.\n";
+if (@ARGV < 3) {
+  die "Provide output.in stops.txt stop_times.txt\n"; # in for hd algo
 }
-my ($STOP_TIMES) = @ARGV;
+my ($OUTPUT, $STOPS, $STOP_TIMES) = @ARGV;
 
-open my $fh, '<', $STOP_TIMES or die "Could not open stop_times.txt.\n";
-my $header_s = <$fh>;
-# print STDERR "Header: '$header_s'.\n";
+open my $stops_fh, '<', $STOPS or die "Could not open stops.txt\n";
+my $stops_header = <$stops_fh>;
+my $stops_header_i = CsvUtils::find_header_indices $stops_header,
+  ['stop_id', 'parent_station'], $GTFS_SEP;
+
+my $vertex_cnt = 0;
+my %stop_to_id;
+my @roots; # stations without a parent
+my %children; # contains a list of children
+my %parent_to_root_resolv; # roots are their own parent
+while (<$stops_fh>) {
+  s/"[^"]*"//g; # remove everything between double quotes, because it's commas
+  my @arr = split $GTFS_SEP;
+  my $stop_id = @arr[$stops_header_i->{stop_id}];
+  my $parent_station = @arr[$stops_header_i->{parent_station}];
+
+  next if exists $stop_to_id{$stop_id}; # unlikely but safety first
+
+  if ($parent_station) {
+    unless (defined $children{$parent_station}) {
+      $children{$parent_station} = [];
+    }
+    push @{$children{$parent_station}}, $stop_id;
+  } else {
+    $stop_to_id{$stop_id} = $vertex_cnt++;
+    push @roots, $stop_id;
+    $parent_to_root_resolv{$stop_id} = $stop_id;
+  }
+}
+close $stops_fh;
+
+# DFS: set children's parent to my parent
+sub set_parent {
+  my ($stop_id) = @_;
+  my $parent = $parent_to_root_resolv{$stop_id};
+  return undef unless defined $children{$stop_id};
+  foreach my $child_stop_id (@{$children{$stop_id}}) {
+    $parent_to_root_resolv{$child_stop_id} = $parent;
+    set_parent($child_stop_id);
+  }
+}
+
+foreach my $root (@roots) {
+  set_parent $root;
+}
+
+open my $stop_times_fh, '<', $STOP_TIMES or
+  die "Could not open stop_times.txt.\n";
+
+my $stop_times_header = <$stop_times_fh>;
+my $stop_times_header_i = CsvUtils::find_header_indices $stop_times_header,
+  ['trip_id', 'arrival_time', 'departure_time', 'stop_id'];
 
 sub hms_to_seconds {
   my ($hms) = @_;
@@ -23,33 +74,26 @@ sub hms_to_seconds {
 
 sub parse_line {
   my ($line) = @_;
-  # print STDERR "Line: '$line'.\n";
-  my @arr = split ',', $line;
+  chomp $line;
+  my @arr = split $GTFS_SEP, $line;
   return {
-    trip_id => $arr[$TRIP_ID_I],
-    arrival_time => hms_to_seconds($arr[$ARRIVAL_TIME_I]),
-    departure_time => hms_to_seconds($arr[$DEPARTURE_TIME_I]),
-    stop_id => $arr[$STOP_ID_I]
+    trip_id => $arr[$stop_times_header_i->{trip_id}],
+    arrival_time => hms_to_seconds(
+      $arr[$stop_times_header_i->{arrival_time}]),
+    departure_time => hms_to_seconds(
+      $arr[$stop_times_header_i->{departure_time}]),
+    stop_id => $arr[$stop_times_header_i->{stop_id}]
   };
 };
-
-my $vertex_i = 0;
-my %vertex_map;
-
-sub get_vertex_i {
-  my ($vertex) = @_;
-  if (!exists $vertex_map{$vertex}) {
-    $vertex_map{$vertex} = $vertex_i++;
-  }
-
-  return $vertex_map{$vertex};
-}
 
 my $graph = {};
 
 my $edges = 0;
 sub set_weight {
   my ($u, $v, $w) = @_;
+  if (!defined $u || !defined $v) {
+    die "Undefined $u, $v.\n";
+  }
   if ($u > $v) {
     ($u, $v) = ($v, $u)
   }
@@ -68,16 +112,17 @@ sub set_weight {
   }
 }
 
-my $first_line = <$fh>;
+my $first_line = <$stop_times_fh>;
 my $prev_stop = parse_line $first_line;
 
-while (<$fh>) {
-  # print STDERR "Line number: $.\n";
+while (<$stop_times_fh>) {
   my $cur_stop = parse_line $_;
 
   if ($prev_stop->{trip_id} == $cur_stop->{trip_id}) {
-    my $prev_vertex = get_vertex_i $prev_stop->{stop_id};
-    my $cur_vertex = get_vertex_i $cur_stop->{stop_id};
+    my $prev_vertex =
+      $stop_to_id{$parent_to_root_resolv{$prev_stop->{stop_id}}};
+    my $cur_vertex = 
+      $stop_to_id{$parent_to_root_resolv{$cur_stop->{stop_id}}};
     my $diff = abs($cur_stop->{arrival_time} - $prev_stop->{departure_time});
 
     set_weight $prev_vertex, $cur_vertex, $diff;
@@ -86,10 +131,13 @@ while (<$fh>) {
   $prev_stop = $cur_stop;
 }
 
-print "$vertex_i $edges\n";
-foreach my $u (keys %$graph) {
-  foreach my $v (keys %{$graph->{$u}}) {
+close $stop_times_fh;
+
+open my $output_fh, '>', $OUTPUT;
+print {$output_fh} "$vertex_cnt $edges\n";
+foreach my $u (sort {$a <=> $b} (keys %$graph)) {
+  foreach my $v (sort {$a <=> $b} (keys %{$graph->{$u}})) {
     my $w = $graph->{$u}->{$v};
-    print "$u $v $w\n";
+    print {$output_fh} "$u $v $w\n";
   }
 }

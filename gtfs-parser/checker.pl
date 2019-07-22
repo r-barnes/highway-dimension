@@ -3,39 +3,32 @@
 use strict;
 use warnings;
 
-if (@ARGV < 2) {
-  die "Provide `stop_times.txt` `stops.txt`.\n";
+if (@ARGV < 1) {
+  die "Provide data.\n";
 }
-my ($STOP_TIMES, $STOPS) = @ARGV;
 
-open my $stops_fh, '<', $STOPS or die "Could not open stops.txt.\n";
-my $stops_header = <$stops_fh>;
-my %stops;
-while (<$stops_fh>) {
-  chomp;
-  my @arr = split ',', $_;
-  $stops{$arr[0]} = 1;
+my ($DATA) = @ARGV;
+open my $fh, '<', $DATA or die "Could not open data from '$DATA'.\n";
+my $header_s = <$fh>;
+my $vertex_cnt = (split ' ', $header_s)[0];
+
+my %seen;
+while (my $edge = <$fh>) {
+  my ($u, $v, $w) = split ' ', $edge;
+  $seen{$u} = 1;
+  $seen{$v} = 1;
 }
-close $stops_fh;
 
-open my $stop_times_fh, '<', $STOP_TIMES or
-  die "Could not open stop_times.txt.\n";
-my $stop_times_header = <$stop_times_fh>;
-while (<$stop_times_fh>) {
-  chomp;
-  my @arr = split ',', $_;
-  --$stops{$arr[3]};
-}
-close $stop_times_fh;
-
-my @unseen;
-foreach (keys %stops) {
-  if ($stops{$_} == 1) {
-    push @unseen, $_;
+my $ok = 1;
+foreach my $i (0 .. ($vertex_cnt - 1)) {
+  if (!exists $seen{$i}) {
+    print STDERR "Vertex $i is not used.\n";
+    $ok = 0;
   }
 }
 
-print scalar(@unseen), "\n";
-foreach (@unseen) {
-  print $_, "\n";
+if ($ok) {
+  print STDERR "Data is OK!\n";
+} else {
+  die "Errors found.\n";
 }
