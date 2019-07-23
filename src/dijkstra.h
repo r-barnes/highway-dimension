@@ -8,13 +8,16 @@
 
 extern const int voidParent;
 
-/* Member `next` are children in shortest path tree.
+/* Member `children` are children in shortest path tree.
  */
 struct DijkstraOutput
 {
   const std::vector<int> distances;
   const std::vector<int> parents;
-  const std::vector<std::vector<int>> next;
+  const std::vector<std::vector<int>> children;
+
+  DijkstraOutput(std::vector<int>&& distances, std::vector<int>&& parents,
+                 std::vector<std::vector<int>>&& children);
 };
 
 /* Returns a pair of distances and parents. Parents -1 mean unreachable,

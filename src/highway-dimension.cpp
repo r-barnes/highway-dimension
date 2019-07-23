@@ -7,6 +7,7 @@
 #include <vector>
 #include <utility>
 #include <queue>
+#include <algorithm>
 
 const int ratio = 2;
 
@@ -17,7 +18,7 @@ collectShortestPaths(const DijkstraOutput& output, int start, int radius)
 {
   const std::vector<int>& distances = output.distances;
   const std::vector<int>& parents = output.parents;
-  const std::vector<std::vector<int>>& next = output.next;
+  const std::vector<std::vector<int>>& children = output.children;
   const int vertexCnt = distances.size();
 
   std::vector<bool> visited(vertexCnt, false);
@@ -30,7 +31,7 @@ collectShortestPaths(const DijkstraOutput& output, int start, int radius)
     Q.pop();
     visited[cur] = true;
 
-    for (const int neighbor: next[cur]) {
+    for (const int neighbor: children[cur]) {
       if (visited[neighbor]) {
         continue;
       }
@@ -81,13 +82,18 @@ approximateHd(const Graph<WeightedEdge>& graph)
   fputs("Ran Dijkstra from all vertices.\n", stderr);
   #endif
 
-  size_t hd = 0;
+  int hd = 0;
 
   for (const int w: edgeWeights) {
+    #ifdef DEBUG
+    fprintf(stderr, "Calculating highway dimension for weight %d.\n", w);
+    #endif
+    const int halfRadius = (w + ratio - 1) / ratio;
+    std::vector<int> localHubs(vertexCnt, 0);
     std::set<std::set<int>> paths;
     for (int u = 0; u < vertexCnt; ++u) {
       const std::set<std::set<int>> curPaths(
-          collectShortestPaths(dijkstraOutputs[u], u, (w + ratio - 1) / ratio));
+          collectShortestPaths(dijkstraOutputs[u], u, halfRadius));
       paths.insert(curPaths.begin(), curPaths.end());
     }
     #ifdef DEBUG
@@ -105,7 +111,16 @@ approximateHd(const Graph<WeightedEdge>& graph)
 
     std::vector<int> hittingSetApx = approximateHittingSet(vertexCnt,
                                                            hittingSetInstance);
-    hd = std::max(hd, hittingSetApx.size());
+    for (const int h : hittingSetApx) {
+      for (int u = 0; u < vertexCnt; ++u) {
+        const int distance = dijkstraOutputs[h].distances[u];
+        if (halfRadius < distance && distance <= w) {
+          ++localHubs[u];
+        }
+      }
+    }
+
+    hd = std::min(hd, *std::max_element(localHubs.begin(), localHubs.end()));
   }
 
   return hd;
