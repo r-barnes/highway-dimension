@@ -3,7 +3,8 @@
 
 #include <vector>
 
-struct Edge {
+struct Edge
+{
   const int to;
   const int weight;
 };

@@ -4,7 +4,8 @@
 #include <climits>
 #include <queue>
 
-struct VertexDistance {
+struct VertexDistance
+{
   int vertex;
   int distance;
 
@@ -14,7 +15,7 @@ struct VertexDistance {
 bool
 VertexDistance::operator<(const VertexDistance& o) const
 {
-  return distance > o.distance;
+  return distance > o.distance; // priority queue is max
 }
 
 // TODO: visited mark

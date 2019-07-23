@@ -3,7 +3,8 @@
 #include <unordered_set>
 #include <algorithm>
 
-struct Shooter {
+struct Shooter
+{
   int id;
   int cnt;
 
