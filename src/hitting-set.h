@@ -10,6 +10,6 @@
  * First `shooterCnt` vertices of G are shooters, the rest are targets.
  */
 std::vector<int>
-approximateHittingSet(const int shooterCnt, const Graph& G);
+approximateHittingSet(const int shooterCnt, const Graph<Edge>& G);
 
 #endif /* __HITTING_SET__ */

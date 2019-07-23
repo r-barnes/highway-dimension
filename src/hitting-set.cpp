@@ -18,7 +18,7 @@ Shooter::operator<(const Shooter& s) const
 }
 
 std::vector<int>
-approximateHittingSet(const int shooterCnt, const Graph& G)
+approximateHittingSet(const int shooterCnt, const Graph<Edge>& G)
 {
   std::vector<Shooter> H(shooterCnt);
   std::vector<int> realDegrees(shooterCnt);

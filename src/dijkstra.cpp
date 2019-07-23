@@ -20,7 +20,7 @@ VertexDistance::operator<(const VertexDistance& o) const
 
 // TODO: visited mark
 std::pair<std::vector<int>, std::vector<int>>
-dijkstra(const Graph& graph, const int start)
+dijkstra(const Graph<WeightedEdge>& graph, const int start)
 {
   int N = graph.vertexCnt;
   std::vector<int> distances(N, INT_MAX), parents(N, -1);
@@ -33,7 +33,7 @@ dijkstra(const Graph& graph, const int start)
     const VertexDistance cur = Q.top();
     Q.pop();
     int curV = cur.vertex, curD = cur.distance;
-    for (const Edge& e : graph.neighborList[curV]) {
+    for (const WeightedEdge& e : graph[curV]) {
       int newDistance = curD + e.weight;
       if (distances[e.to] > newDistance) {
         distances[e.to] = newDistance;

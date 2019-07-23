@@ -10,6 +10,6 @@
  * aside from start.
  */
 std::pair<std::vector<int>, std::vector<int>>
-dijkstra(const Graph& graph, const int start);
+dijkstra(const Graph<WeightedEdge>& graph, const int start);
 
 #endif /* __DIJKSTRA__ */
