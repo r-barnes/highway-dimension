@@ -10,7 +10,7 @@
 
 /* Pick a small enough, because runtime is square of this.
  */
-const int instanceMaxSize = 100;
+const int instanceMaxSize = 10000;
 
 struct HittingSetInstance
 {
@@ -34,6 +34,12 @@ const std::vector<HittingSetInstance> instances = {
       {6, 16}, {6, 17}, {8, 16}, {8, 17}, {10, 16}, {10, 17}, {12, 16}, {12, 17},
       {7, 16}, {7, 18}, {9, 16}, {9, 18}, {11, 16}, {11, 18}, {13, 16}, {13, 18}
     }
+  },
+  {
+    3, 10, 4, {
+      {0, 4}, {0, 8}, {0, 9}, {1, 4}, {1, 6}, {1, 8}, {2, 4}, {2, 5}, {2, 8},
+      {2, 9}, {3, 4}, {3, 5}, {3, 7}
+    }
   }
 };
 
@@ -47,14 +53,18 @@ randomInstance()
   const int instanceSize = instanceDistr(engine);
   std::uniform_int_distribution<int> shooterDistr(1, instanceSize);
   const int shooterCnt = shooterDistr(engine);
+  #ifdef DEBUG
   const int targetCnt = instanceSize - shooterCnt;
   fprintf(stderr, "Shooter: %d, target: %d.\n", shooterCnt, targetCnt);
+  #endif
   Graph<int> G(instanceSize);
+  std::unordered_set<int> ref;
   for (int u = 0; u < shooterCnt; ++u) {
     for (int v = shooterCnt; v < instanceSize; ++v) {
       if (coinFlip(engine)) {
         G.addEdge(u, v);
         G.addEdge(v, u);
+        ref.insert(v);
       }
     }
   }
@@ -67,8 +77,22 @@ randomInstance()
     }
   }
 
-  fprintf(stderr, "- solution size: %lu\n", solution.size());
-  assert((int)solution.size() == targetCnt);
+  #ifdef DEBUG
+  if (ref != solution) {
+    fputs("Offending test case:\n", stderr);
+    for (int u = 0; u < shooterCnt; ++u) {
+      for (const int v: G[u]) {
+        fprintf(stderr, "%d %d\n", u, v);
+      }
+    }
+    fputs("Found hitting set: ", stderr);
+    for (const int u: hittingSet) {
+      fprintf(stderr, "%d ", u);
+    }
+    fputs("\n", stderr);
+  }
+  #endif
+  assert(ref == solution);
 }
 
 int
@@ -87,7 +111,7 @@ main(int argc, char* argv[])
   }
   fputs("Fixed tests successful.\n", stderr);
 
-  for (int i = 0; i < 10000; ++i) {
+  for (int i = 0; i < 1000; ++i) {
     randomInstance();
   }
   fputs("Random tests successful.\n", stderr);

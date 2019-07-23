@@ -5,8 +5,8 @@
 
 struct Shooter
 {
-  int id;
-  int cnt;
+  int vertex;
+  int degree;
 
   bool operator<(const Shooter& s) const;
 };
@@ -14,41 +14,50 @@ struct Shooter
 bool
 Shooter::operator<(const Shooter& s) const
 {
-  return cnt < s.cnt;
+  return degree < s.degree || (degree == s.degree && vertex < s.vertex);
 }
 
 std::vector<int>
 approximateHittingSet(const int shooterCnt, const Graph<int>& G)
 {
-  std::vector<Shooter> H(shooterCnt);
+  const int targetCnt = G.vertexCnt - shooterCnt;
+  std::vector<Shooter> pq(shooterCnt);
   std::vector<int> realDegrees(shooterCnt);
+  std::vector<bool> covered(targetCnt, false);
   for (int i = 0; i < shooterCnt; ++i) {
-    H[i].id = i;
-    H[i].cnt = realDegrees[i] = G[i].size();
+    pq[i].vertex = i;
+    pq[i].degree = realDegrees[i] = G[i].size();
   }
  
   std::vector<int> hittingSet;
-  std::make_heap(H.begin(), H.end());
+  std::make_heap(pq.begin(), pq.end());
   
-  while (!H.empty()) {
-    std::pop_heap(H.begin(), H.end());
-    const Shooter mx = H.back();
-    H.pop_back();
-    if (!mx.cnt) {
+  while (!pq.empty()) {
+    std::pop_heap(pq.begin(), pq.end());
+    const int degree = pq.back().degree;
+    const int vertex = pq.back().vertex;
+    pq.pop_back();
+
+    if (!degree) {
       break;
     }
 
-    if (realDegrees[mx.id] < mx.cnt) {
-      H.push_back({mx.id, realDegrees[mx.id]});
-      std::push_heap(H.begin(), H.end());
+    if (realDegrees[vertex] < degree) {
+      pq.push_back({vertex, realDegrees[vertex]});
+      std::push_heap(pq.begin(), pq.end());
       continue;
     }
 
-    hittingSet.push_back(mx.id);
-    for (const int& e : G[mx.id]) {
-      for (const int& e2: G[e]) {
-        --realDegrees[e2];
+    hittingSet.push_back(vertex);
+    for (const int u: G[vertex]) {
+      const int targetIndex = u - shooterCnt;
+      if (covered[targetIndex]) {
+        continue;
       }
+      for (const int v: G[u]) {
+        --realDegrees[v];
+      }
+      covered[targetIndex] = true;
     }
   }
 
