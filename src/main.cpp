@@ -1,20 +1,34 @@
 #include "graph.h"
+#include "highway-dimension.h"
 
 #include <cstdio>
-#include <unordered_set>
 
 int
 main(int argc, char* argv[])
 {
+  if (argc < 1) {
+    fprintf(stderr, "Usage: %s graph.in\n", argv[0]);
+    return 1;
+  }
+  // FIXME: read input properly
+  freopen(argv[1], "r", stdin);
   int N, M;
   scanf("%d%d", &N, &M);
 
   Graph<WeightedEdge> G(N);
 
+  #ifdef DEBUG
+  fputs("Processing graph.....", stderr);
+  #endif
   for (int i = 0; i < M; ++i) {
     int u, v, w;
     scanf("%d%d%d", &u, &v, &w);
     G.addEdge(u, {v, w});
     G.addEdge(v, {u, w});
   }
+  #ifdef DEBUG
+  fputs("done\n", stderr);
+  #endif
+
+  printf("Approximate highway dimension is: %d.\n", approximateHd(G));
 }

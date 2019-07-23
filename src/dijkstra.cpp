@@ -4,6 +4,8 @@
 #include <climits>
 #include <queue>
 
+const int voidParent = -1;
+
 struct VertexDistance
 {
   int vertex;
@@ -19,25 +21,28 @@ VertexDistance::operator<(const VertexDistance& o) const
 }
 
 // TODO: visited mark
-std::pair<std::vector<int>, std::vector<int>>
+DijkstraOutput
 dijkstra(const Graph<WeightedEdge>& graph, const int start)
 {
-  int N = graph.vertexCnt;
-  std::vector<int> distances(N, INT_MAX), parents(N, -1);
+  const int vertexCnt = graph.vertexCnt;
+  std::vector<int> distances(vertexCnt, INT_MAX); 
+  std::vector<int> parents(vertexCnt, voidParent);
+  std::vector<std::vector<int>> next(vertexCnt);
   std::priority_queue<VertexDistance> Q;
-  int initialDistance = 0;
+  const int initialDistance = 0;
   distances[start] = initialDistance;
   Q.push({start, initialDistance});
 
   while (!Q.empty()) {
     const VertexDistance cur = Q.top();
     Q.pop();
-    int curV = cur.vertex, curD = cur.distance;
+    const int curV = cur.vertex, curD = cur.distance;
     for (const WeightedEdge& e : graph[curV]) {
       int newDistance = curD + e.weight;
       if (distances[e.to] > newDistance) {
         distances[e.to] = newDistance;
         parents[e.to] = curV;
+        next[curV].push_back(e.to);
         Q.push({e.to, newDistance});
       }
     }

@@ -6,10 +6,21 @@
 #include <utility>
 #include <vector>
 
+extern const int voidParent;
+
+/* Member `next` are children in shortest path tree.
+ */
+struct DijkstraOutput
+{
+  const std::vector<int> distances;
+  const std::vector<int> parents;
+  const std::vector<std::vector<int>> next;
+};
+
 /* Returns a pair of distances and parents. Parents -1 mean unreachable,
  * aside from start.
  */
-std::pair<std::vector<int>, std::vector<int>>
+DijkstraOutput
 dijkstra(const Graph<WeightedEdge>& graph, const int start);
 
 #endif /* __DIJKSTRA__ */

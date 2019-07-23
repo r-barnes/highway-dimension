@@ -6,12 +6,12 @@
 int
 main(int argc, char* argv[])
 {
-  Graph<Edge> G(9);
+  Graph<int> G(9);
   const auto addEdge =
     [&G](int u, int v)
     {
-      G.addEdge(u, {v});
-      G.addEdge(v, {u});
+      G.addEdge(u, v);
+      G.addEdge(v, u);
     };
   addEdge(0, 5);
   addEdge(1, 5);

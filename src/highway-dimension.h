@@ -4,6 +4,6 @@
 #include "graph.h"
 
 int
-approximateHd(Graph<WeightedEdge>& graph);
+approximateHd(const Graph<WeightedEdge>& graph);
 
 #endif /* __HIGHWAY_DIMENSION__ */

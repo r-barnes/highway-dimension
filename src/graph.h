@@ -4,11 +4,6 @@
 #include <vector>
 #include <utility>
 
-struct Edge
-{
-  const int to;
-};
-
 struct WeightedEdge
 {
   const int to;
