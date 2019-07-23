@@ -5,7 +5,7 @@ OBJECT_FILES = dijkstra.o highway-dimension.o hitting-set.o
 BIN_FILES = main.out
 TEST_FILES = hitting-set-test.test
 
-all: $(BIN_FILES) test
+all: $(BIN_FILES)
 
 test: $(TEST_FILES)
 
