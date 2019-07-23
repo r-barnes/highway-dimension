@@ -2,12 +2,19 @@ CXX = g++
 CXXDEBUG = -DDEBUG -g
 CXXFLAGS = -std=c++14 -O2 -Wall -pedantic $(CXXDEBUG)
 OBJECT_FILES = dijkstra.o highway-dimension.o hitting-set.o
-BIN_FILES = main.out hitting-set-test.out
+BIN_FILES = main.out
+TEST_FILES = hitting-set-test.test
 
-all: $(BIN_FILES)
+all: $(BIN_FILES) test
+
+test: $(TEST_FILES)
 
 %.out: %.o $(OBJECT_FILES)
 	$(CXX) $(CXXFLAGS) $^ -o $@
+
+%.test: %.o $(OBJECT_FILES)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+	./$@
 
 .PHONY: clean clean-all
 

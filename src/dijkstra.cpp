@@ -7,8 +7,6 @@
 #include <cstdio>
 #endif
 
-const int voidParent = -1;
-
 DijkstraOutput::DijkstraOutput(std::vector<int>&& distances,
                                std::vector<int>&& parents,
                                std::vector<std::vector<int>>&& children)
