@@ -76,7 +76,7 @@ approximateHd(const Graph<WeightedEdge>& graph)
     for (const int h : hittingSetApx) {
       for (int u = 0; u < vertexCnt; ++u) {
         const int distance = dijkstraOutputs[h].distances[u];
-        if (halfRadius < distance && distance <= w) {
+        if (distance <= w) {
           ++localHubs[u];
         }
       }
