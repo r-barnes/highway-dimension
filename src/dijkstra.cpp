@@ -1,5 +1,5 @@
-#include "graph.h"
 #include "dijkstra.h"
+#include "graph.h"
 
 #include <climits>
 #include <queue>
@@ -69,4 +69,49 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start)
   #endif
   return DijkstraOutput(std::move(distances), std::move(parents),
                         std::move(children));
+}
+
+std::set<std::set<int>>
+collectShortestPaths(const DijkstraOutput& output, int start, int rFrom,
+                     int rTo)
+{
+  const std::vector<int>& distances = output.distances;
+  const std::vector<int>& parents = output.parents;
+  const std::vector<std::vector<int>>& children = output.children;
+  const int vertexCnt = distances.size();
+
+  std::vector<bool> visited(vertexCnt, false);
+  std::queue<int> Q;
+  Q.push(start);
+  std::set<std::set<int>> paths;
+
+  while (!Q.empty()) {
+    const int cur = Q.front();
+    Q.pop();
+    visited[cur] = true;
+
+    for (const int neighbor: children[cur]) {
+      if (visited[neighbor]) {
+        continue;
+      }
+      const int neighborDistance = distances[neighbor];
+      if (neighborDistance > rTo) {
+        continue;
+      }
+
+      // FIXME: if parent is admissible, then just add me to his path
+      if (rTo >= neighborDistance && neighborDistance > rFrom) {
+        std::set<int> path;
+        for (int endOfPath = neighbor; endOfPath != voidParent;
+             endOfPath = parents[endOfPath]) {
+          path.insert(endOfPath);
+        }
+        paths.insert(path);
+      }
+
+      Q.push(neighbor);
+    }
+  }
+
+  return paths;
 }

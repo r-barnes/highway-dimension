@@ -5,6 +5,7 @@
 
 #include <utility>
 #include <vector>
+#include <set>
 
 extern const int voidParent;
 
@@ -25,5 +26,11 @@ struct DijkstraOutput
  */
 DijkstraOutput
 dijkstra(const Graph<WeightedEdge>& graph, const int start);
+
+/* Collects shortest paths with length (rFrom, rTo].
+ */
+std::set<std::set<int>>
+collectShortestPaths(const DijkstraOutput& output, int start, int rFrom,
+                     int rTo);
 
 #endif /* __DIJKSTRA__ */

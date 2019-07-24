@@ -2,7 +2,6 @@
 #include "hitting-set.h"
 #include "dijkstra.h"
 
-#include <set>
 #include <unordered_set>
 #include <vector>
 #include <utility>
@@ -10,52 +9,6 @@
 #include <algorithm>
 
 const int ratio = 2;
-
-/* Collects shortest paths for a single start.
- */
-std::set<std::set<int>>
-collectShortestPaths(const DijkstraOutput& output, int start, int radius)
-{
-  const std::vector<int>& distances = output.distances;
-  const std::vector<int>& parents = output.parents;
-  const std::vector<std::vector<int>>& children = output.children;
-  const int vertexCnt = distances.size();
-
-  std::vector<bool> visited(vertexCnt, false);
-  std::queue<int> Q;
-  Q.push(start);
-  std::set<std::set<int>> paths;
-
-  while (!Q.empty()) {
-    const int cur = Q.front();
-    Q.pop();
-    visited[cur] = true;
-
-    for (const int neighbor: children[cur]) {
-      if (visited[neighbor]) {
-        continue;
-      }
-      const int neighborDistance = distances[neighbor];
-      if (neighborDistance > radius * ratio) {
-        continue;
-      }
-
-      // FIXME: if parent is admissible, then just add me to his path
-      if (neighborDistance > radius) {
-        std::set<int> path;
-        for (int endOfPath = neighbor; endOfPath != voidParent;
-             endOfPath = parents[endOfPath]) {
-          path.insert(endOfPath);
-        }
-        paths.insert(path);
-      }
-
-      Q.push(neighbor);
-    }
-  }
-
-  return paths;
-}
 
 int
 approximateHd(const Graph<WeightedEdge>& graph)
@@ -88,12 +41,12 @@ approximateHd(const Graph<WeightedEdge>& graph)
     #ifdef DEBUG
     fprintf(stderr, "Calculating highway dimension for weight %d.\n", w);
     #endif
-    const int halfRadius = (w + ratio - 1) / ratio;
+    const int halfRadius = w / ratio;
     std::vector<int> localHubs(vertexCnt, 0);
     std::set<std::set<int>> paths;
     for (int u = 0; u < vertexCnt; ++u) {
       const std::set<std::set<int>> curPaths(
-          collectShortestPaths(dijkstraOutputs[u], u, halfRadius));
+          collectShortestPaths(dijkstraOutputs[u], u, halfRadius, w));
       paths.insert(curPaths.begin(), curPaths.end());
     }
     #ifdef DEBUG
@@ -109,8 +62,8 @@ approximateHd(const Graph<WeightedEdge>& graph)
       }
     }
 
-    std::vector<int> hittingSetApx = approximateHittingSet(vertexCnt,
-                                                           hittingSetInstance);
+    std::vector<int> hittingSetApx =
+      approximateHittingSet(vertexCnt, hittingSetInstance);
     for (const int h : hittingSetApx) {
       for (int u = 0; u < vertexCnt; ++u) {
         const int distance = dijkstraOutputs[h].distances[u];
