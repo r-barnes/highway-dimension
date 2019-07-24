@@ -67,12 +67,12 @@ approximateHd(const Graph<WeightedEdge>& graph)
         hittingSetInstance.addEdge(u, pathIndex);
       }
     }
-
     std::vector<int> hittingSetApx =
       approximateHittingSet(vertexCnt, hittingSetInstance);
     #ifdef DEBUG
-    assert(hittingSetApx.size());
+    assert(hittingSetApx.size() > 0);
     #endif
+
     for (const int h : hittingSetApx) {
       for (int u = 0; u < vertexCnt; ++u) {
         const int distance = dijkstraOutputs[h].distances[u];

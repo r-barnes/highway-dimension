@@ -7,6 +7,8 @@
 #include <cstdio>
 #endif
 
+const int INF = 1 << 30;
+
 DijkstraOutput::DijkstraOutput(std::vector<int>&& distances,
                                std::vector<int>&& parents,
                                std::vector<std::vector<int>>&& children)
@@ -40,7 +42,7 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start)
   fprintf(stderr, "Started Dijkstra from %d.\n", start);
   #endif
   const int vertexCnt = graph.vertexCnt;
-  std::vector<int> distances(vertexCnt, INT_MAX); 
+  std::vector<int> distances(vertexCnt, INF);
   std::vector<int> parents(vertexCnt, voidParent);
   std::vector<std::vector<int>> children(vertexCnt);
   std::priority_queue<VertexDistance> Q;
@@ -54,12 +56,13 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start)
     Q.pop();
     const int curV = cur.vertex, curD = cur.distance;
     for (const WeightedEdge& e : graph[curV]) {
-      int newDistance = curD + e.weight;
-      if (distances[e.to] > newDistance) {
-        distances[e.to] = newDistance;
-        parents[e.to] = curV;
-        children[curV].push_back(e.to);
-        Q.push({e.to, newDistance});
+      const int neighbor = e.to;
+      const int newDistance = curD + e.weight;
+      if (distances[neighbor] > newDistance) {
+        distances[neighbor] = newDistance;
+        parents[neighbor] = curV;
+        children[curV].push_back(neighbor);
+        Q.push({neighbor, newDistance});
       }
     }
   }
