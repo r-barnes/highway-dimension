@@ -30,5 +30,5 @@ main(int argc, char* argv[])
   fputs("done\n", stderr);
   #endif
 
-  printf("Approximate highway dimension is: %d.\n", approximateHd(G));
+  printf("%d\n", approximateHd(G));
 }
