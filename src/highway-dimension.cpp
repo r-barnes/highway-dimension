@@ -8,6 +8,7 @@
 #include <queue>
 #include <algorithm>
 #include <cinttypes>
+#include <limits>
 #ifdef DEBUG
 #include <cassert>
 #endif
@@ -40,7 +41,7 @@ approximateHd(const Graph<WeightedEdge>& graph)
   fputs("Ran Dijkstra from all vertices.\n", stderr);
   #endif
 
-  int hd = 1 << 30;
+  int hd = std::numeric_limits<int>::max();
 
   /* Apparently there are stations that can be traversed in 0 seconds.
    */
