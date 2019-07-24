@@ -7,6 +7,9 @@
 #include <utility>
 #include <queue>
 #include <algorithm>
+#ifdef DEBUG
+#include <cassert>
+#endif
 
 const int ratio = 2;
 
@@ -37,6 +40,9 @@ approximateHd(const Graph<WeightedEdge>& graph)
 
   int hd = 0;
 
+  /* Apparently there are stations that can be traversed in 0 seconds.
+   */
+  edgeWeights.erase(0);
   for (const int w: edgeWeights) {
     #ifdef DEBUG
     fprintf(stderr, "Calculating highway dimension for weight %d.\n", w);
@@ -64,6 +70,9 @@ approximateHd(const Graph<WeightedEdge>& graph)
 
     std::vector<int> hittingSetApx =
       approximateHittingSet(vertexCnt, hittingSetInstance);
+    #ifdef DEBUG
+    assert(hittingSetApx.size());
+    #endif
     for (const int h : hittingSetApx) {
       for (int u = 0; u < vertexCnt; ++u) {
         const int distance = dijkstraOutputs[h].distances[u];
