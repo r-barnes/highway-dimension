@@ -3,11 +3,12 @@
 
 #include <vector>
 #include <utility>
+#include <cinttypes>
 
 struct WeightedEdge
 {
   const int to;
-  const int weight;
+  const int64_t weight;
 };
 
 template <typename EdgeType>

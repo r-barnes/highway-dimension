@@ -21,8 +21,9 @@ main(int argc, char* argv[])
   fputs("Processing graph.....", stderr);
   #endif
   for (int i = 0; i < M; ++i) {
-    int u, v, w;
-    scanf("%d%d%d", &u, &v, &w);
+    int u, v;
+    int64_t w;
+    scanf("%d%d%" SCNd64, &u, &v, &w);
     G.addEdge(u, {v, w});
     G.addEdge(v, {u, w});
   }

@@ -13,11 +13,11 @@ extern const int voidParent;
  */
 struct DijkstraOutput
 {
-  const std::vector<int> distances;
+  const std::vector<int64_t> distances;
   const std::vector<int> parents;
   const std::vector<std::vector<int>> children;
 
-  DijkstraOutput(std::vector<int>&& distances, std::vector<int>&& parents,
+  DijkstraOutput(std::vector<int64_t>&& distances, std::vector<int>&& parents,
                  std::vector<std::vector<int>>&& children);
 };
 
@@ -30,7 +30,7 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start);
 /* Collects shortest paths with length (rFrom, rTo].
  */
 std::set<std::set<int>>
-collectShortestPaths(const DijkstraOutput& output, int start, int rFrom,
-                     int rTo);
+collectShortestPaths(const DijkstraOutput& output, int start, int64_t rFrom,
+                     int64_t rTo);
 
 #endif /* __DIJKSTRA__ */

@@ -7,11 +7,12 @@
 #include <utility>
 #include <queue>
 #include <algorithm>
+#include <cinttypes>
 #ifdef DEBUG
 #include <cassert>
 #endif
 
-const int ratio = 2;
+const int64_t ratio = 2;
 
 int
 approximateHd(const Graph<WeightedEdge>& graph)
@@ -20,7 +21,8 @@ approximateHd(const Graph<WeightedEdge>& graph)
   fputs("Approximating highway dimension.\n", stderr);
   #endif
   const int vertexCnt = graph.vertexCnt;
-  std::unordered_set<int> edgeWeights; // FIXME: actually no need to store these
+  // FIXME: actually no need to store these
+  std::unordered_set<int64_t> edgeWeights;
   for (int u = 0; u < vertexCnt; ++u) {
     for (const WeightedEdge& e : graph[u]) {
       edgeWeights.insert(e.weight);
@@ -38,16 +40,16 @@ approximateHd(const Graph<WeightedEdge>& graph)
   fputs("Ran Dijkstra from all vertices.\n", stderr);
   #endif
 
-  int hd = 0;
+  int hd = 1 << 30;
 
   /* Apparently there are stations that can be traversed in 0 seconds.
    */
   edgeWeights.erase(0);
-  for (const int w: edgeWeights) {
+  for (const int64_t w: edgeWeights) {
     #ifdef DEBUG
     fprintf(stderr, "Calculating highway dimension for weight %d.\n", w);
     #endif
-    const int halfRadius = w / ratio;
+    const int64_t halfRadius = w / ratio;
     std::vector<int> localHubs(vertexCnt, 0);
     std::set<std::set<int>> paths;
     for (int u = 0; u < vertexCnt; ++u) {
@@ -75,14 +77,20 @@ approximateHd(const Graph<WeightedEdge>& graph)
 
     for (const int h : hittingSetApx) {
       for (int u = 0; u < vertexCnt; ++u) {
-        const int distance = dijkstraOutputs[h].distances[u];
+        const int64_t distance = dijkstraOutputs[h].distances[u];
         if (distance <= w) {
           ++localHubs[u];
         }
       }
     }
 
-    hd = std::min(hd, *std::max_element(localHubs.begin(), localHubs.end()));
+    int curH = *std::max_element(localHubs.begin(), localHubs.end());
+    #ifdef DEBUG
+    if (curH < 1) {
+      fputs("! Hub density is 0!", stderr);
+    }
+    #endif
+    hd = std::min(hd, curH);
   }
 
   return hd;

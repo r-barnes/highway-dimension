@@ -7,13 +7,13 @@
 #include <cstdio>
 #endif
 
-const int INF = 1 << 30;
+const int_fast64_t INF = INT64_C(1) << 61;
 
-DijkstraOutput::DijkstraOutput(std::vector<int>&& distances,
+DijkstraOutput::DijkstraOutput(std::vector<int64_t>&& distances,
                                std::vector<int>&& parents,
                                std::vector<std::vector<int>>&& children)
   : distances(std::move(distances)), parents(std::move(parents)),
-      children(std::move(children))
+    children(std::move(children))
 {
 }
 
@@ -22,7 +22,7 @@ const int voidParent = -1;
 struct VertexDistance
 {
   int vertex;
-  int distance;
+  int64_t distance;
 
   bool operator<(const VertexDistance& o) const;
 };
@@ -42,11 +42,11 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start)
   fprintf(stderr, "Started Dijkstra from %d.\n", start);
   #endif
   const int vertexCnt = graph.vertexCnt;
-  std::vector<int> distances(vertexCnt, INF);
+  std::vector<int64_t> distances(vertexCnt, INF);
   std::vector<int> parents(vertexCnt, voidParent);
   std::vector<std::vector<int>> children(vertexCnt);
   std::priority_queue<VertexDistance> Q;
-  const int initialDistance = 0;
+  const int64_t initialDistance = 0;
   distances[start] = initialDistance;
   parents[start] = voidParent;
   Q.push({start, initialDistance});
@@ -54,10 +54,11 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start)
   while (!Q.empty()) {
     const VertexDistance cur = Q.top();
     Q.pop();
-    const int curV = cur.vertex, curD = cur.distance;
+    const int curV = cur.vertex;
+    const int64_t curD = cur.distance;
     for (const WeightedEdge& e : graph[curV]) {
       const int neighbor = e.to;
-      const int newDistance = curD + e.weight;
+      const int64_t newDistance = curD + e.weight;
       if (distances[neighbor] > newDistance) {
         distances[neighbor] = newDistance;
         parents[neighbor] = curV;
@@ -75,10 +76,10 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start)
 }
 
 std::set<std::set<int>>
-collectShortestPaths(const DijkstraOutput& output, int start, int rFrom,
-                     int rTo)
+collectShortestPaths(const DijkstraOutput& output, int start, int64_t rFrom,
+                     int64_t rTo)
 {
-  const std::vector<int>& distances = output.distances;
+  const std::vector<int64_t>& distances = output.distances;
   const std::vector<int>& parents = output.parents;
   const std::vector<std::vector<int>>& children = output.children;
   const int vertexCnt = distances.size();
@@ -97,7 +98,7 @@ collectShortestPaths(const DijkstraOutput& output, int start, int rFrom,
       if (visited[neighbor]) {
         continue;
       }
-      const int neighborDistance = distances[neighbor];
+      const int64_t neighborDistance = distances[neighbor];
       if (neighborDistance > rTo) {
         continue;
       }
