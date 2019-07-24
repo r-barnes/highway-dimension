@@ -6,7 +6,7 @@
 int
 main(int argc, char* argv[])
 {
-  if (argc < 1) {
+  if (argc < 2) {
     fprintf(stderr, "Usage: %s graph.in\n", argv[0]);
     return 1;
   }
