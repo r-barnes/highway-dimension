@@ -15,6 +15,7 @@ my ($OUTPUT, $STOPS, $STOP_TIMES) = @ARGV;
 
 open my $stops_fh, '<', $STOPS or die "Could not open stops.txt\n";
 my $stops_header = <$stops_fh>;
+$stops_header =~ s/\"//g; # destroy all simple quotes in header
 my $stops_header_i = CsvUtils::find_header_indices $stops_header,
   ['stop_id', 'parent_station'], $GTFS_SEP;
 
@@ -63,6 +64,7 @@ open my $stop_times_fh, '<', $STOP_TIMES or
   die "Could not open stop_times.txt.\n";
 
 my $stop_times_header = <$stop_times_fh>;
+$stop_times_header =~ s/\"//g;
 my $stop_times_header_i = CsvUtils::find_header_indices $stop_times_header,
   ['trip_id', 'arrival_time', 'departure_time', 'stop_id'];
 
