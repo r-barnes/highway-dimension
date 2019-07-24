@@ -41,7 +41,7 @@ approximateHd(const Graph<WeightedEdge>& graph)
   fputs("Ran Dijkstra from all vertices.\n", stderr);
   #endif
 
-  int hd = std::numeric_limits<int>::max();
+  int hd = 0;
 
   /* Apparently there are stations that can be traversed in 0 seconds.
    */
@@ -91,7 +91,7 @@ approximateHd(const Graph<WeightedEdge>& graph)
       fputs("! Hub density is 0!", stderr);
     }
     #endif
-    hd = std::min(hd, curH);
+    hd = std::max(hd, curH);
   }
 
   return hd;
