@@ -68,7 +68,8 @@ approximateSparseSPC(const Graph<WeightedEdge>& graph)
   };
   for (const int64_t w: edgeWeights) {
     #ifdef DEBUG
-    fprintf(stderr, "Calculating highway dimension for weight %d.\n", w);
+    fprintf(stderr, "Calculating highway dimension for weight %" PRId64
+                    ".\n", w);
     #endif
     const int64_t halfRadius = w / ratio;
     std::vector<int> localHubs(vertexCnt, 0);
@@ -138,12 +139,16 @@ approximateHd(const Graph<WeightedEdge>& graph)
   size_t hd = 0;
 
   for (const int64_t w: edgeWeights) {
-    const int quarterW = w / ratio;
+    const int64_t quarterW = w / ratio;
     #ifdef DEBUG
-    fprintf(stderr, "Calculating highway dimension for range (%d, %d].\n",
+    fprintf(stderr, "Calculating highway dimension for range (%" PRId64
+                    ", %" PRId64 "].\n",
             quarterW, w);
     #endif
     for (int u = 0; u < vertexCnt; ++u) {
+      #ifdef DEBUG
+      fprintf(stderr, "Vertex %d.\n", u);
+      #endif
       const DijkstraOutput& myDijkstraOutput = dijkstraOutputs[u];
 
       std::unordered_set<int> ball;
