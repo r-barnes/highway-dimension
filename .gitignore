@@ -4,3 +4,4 @@
 *.log
 *.test
 tags
+properties.sh

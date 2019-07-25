@@ -1,6 +1,6 @@
 CXX = g++
 CXXDEBUG =#-DDEBUG -g
-CXXFLAGS = -std=c++14 -O2 -Wall -pedantic $(CXXDEBUG)
+CXXFLAGS = -std=c++17 -O2 -Wall -pedantic -Wextra $(CXXDEBUG)
 OBJECT_FILES = dijkstra.o highway-dimension.o hitting-set.o
 BIN_FILES = main.out
 TEST_FILES = hitting-set.test.out

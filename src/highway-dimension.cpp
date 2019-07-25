@@ -4,48 +4,68 @@
 
 #include <unordered_set>
 #include <vector>
-#include <utility>
-#include <queue>
 #include <algorithm>
 #include <cinttypes>
-#include <limits>
 #ifdef DEBUG
 #include <cassert>
+#include <cstdio>
 #endif
 
-const int64_t ratio = 2;
-
-int
-approximateHd(const Graph<WeightedEdge>& graph)
+std::unordered_set<int64_t>
+collectDistinctWeights(const Graph<WeightedEdge>& graph)
 {
-  #ifdef DEBUG
-  fputs("Approximating highway dimension.\n", stderr);
-  #endif
+  std::unordered_set<int64_t> result;
   const int vertexCnt = graph.vertexCnt;
-  // FIXME: actually no need to store these
-  std::unordered_set<int64_t> edgeWeights;
   for (int u = 0; u < vertexCnt; ++u) {
     for (const WeightedEdge& e : graph[u]) {
-      edgeWeights.insert(e.weight);
+      result.insert(e.weight);
     }
   }
+
+  /* Apparently there are stations that can be traversed in 0 seconds.
+   */
+  result.erase(0);
+  return result;
+}
+
+std::vector<DijkstraOutput>
+dijkstraFromAllVertices(const Graph<WeightedEdge>& graph)
+{
+  const int vertexCnt = graph.vertexCnt;
+  std::vector<DijkstraOutput> result;
+  for (int u = 0; u < vertexCnt; ++u) {
+    result.push_back(dijkstra(graph, u));
+  }
+  return result;
+}
+
+/* Imho this does not work correctly.
+ */
+int
+approximateSparseSPC(const Graph<WeightedEdge>& graph)
+{
+  static const int64_t ratio = 2;
+  #ifdef DEBUG
+  fputs("Approximating sparse shortest path cover.\n", stderr);
+  #endif
+  const int vertexCnt = graph.vertexCnt;
+  const std::unordered_set<int64_t> edgeWeights = collectDistinctWeights(graph);
   #ifdef DEBUG
   fputs("Found distinct edge weights.\n", stderr);
   #endif
 
-  std::vector<DijkstraOutput> dijkstraOutputs;
-  for (int u = 0; u < vertexCnt; ++u) {
-    dijkstraOutputs.push_back(std::move(dijkstra(graph, u)));
-  }
+  const std::vector<DijkstraOutput> dijkstraOutputs =
+    dijkstraFromAllVertices(graph);
   #ifdef DEBUG
   fputs("Ran Dijkstra from all vertices.\n", stderr);
   #endif
 
   int hd = 0;
 
-  /* Apparently there are stations that can be traversed in 0 seconds.
-   */
-  edgeWeights.erase(0);
+  auto predicate = [](__attribute__((unused))int u)
+  {
+    return true;
+  };
   for (const int64_t w: edgeWeights) {
     #ifdef DEBUG
     fprintf(stderr, "Calculating highway dimension for weight %d.\n", w);
@@ -55,7 +75,7 @@ approximateHd(const Graph<WeightedEdge>& graph)
     std::set<std::set<int>> paths;
     for (int u = 0; u < vertexCnt; ++u) {
       const std::set<std::set<int>> curPaths(
-          collectShortestPaths(dijkstraOutputs[u], u, halfRadius, w));
+          collectShortestPaths(dijkstraOutputs[u], predicate, u, halfRadius, w));
       paths.insert(curPaths.begin(), curPaths.end());
     }
     #ifdef DEBUG
@@ -64,7 +84,7 @@ approximateHd(const Graph<WeightedEdge>& graph)
 
     Graph<int> hittingSetInstance(vertexCnt + paths.size());
     int pathIndex = vertexCnt;
-    for (auto p = paths.begin(); p != paths.end(); ++p, ++pathIndex) {
+    for (auto p = paths.cbegin(); p != paths.cend(); ++p, ++pathIndex) {
       for (const int u : *p) {
         hittingSetInstance.addEdge(pathIndex, u);
         hittingSetInstance.addEdge(u, pathIndex);
@@ -92,6 +112,80 @@ approximateHd(const Graph<WeightedEdge>& graph)
     }
     #endif
     hd = std::max(hd, curH);
+  }
+
+  return hd;
+}
+
+int
+approximateHd(const Graph<WeightedEdge>& graph)
+{
+  #ifdef DEBUG
+  fputs("Approximating highway dimension.\n", stderr);
+  #endif
+  static const int64_t ratio = 4;
+  const int vertexCnt = graph.vertexCnt;
+  // FIXME: no need to store these
+  const std::unordered_set<int64_t> edgeWeights = collectDistinctWeights(graph);
+  #ifdef DEBUG
+  fputs("Collected distinct edge weights.\n", stderr);
+  #endif
+  const std::vector<DijkstraOutput> dijkstraOutputs =
+    dijkstraFromAllVertices(graph);
+  #ifdef DEBUG
+  fputs("Ran Dijkstra from all vertices.\n", stderr);
+  #endif
+  size_t hd = 0;
+
+  for (const int64_t w: edgeWeights) {
+    const int quarterW = w / ratio;
+    #ifdef DEBUG
+    fprintf(stderr, "Calculating highway dimension for range (%d, %d].\n",
+            quarterW, w);
+    #endif
+    for (int u = 0; u < vertexCnt; ++u) {
+      const DijkstraOutput& myDijkstraOutput = dijkstraOutputs[u];
+
+      std::unordered_set<int> ball;
+      for (int v = 0; v < vertexCnt; ++v) {
+        if (myDijkstraOutput.distances[v] <= w) {
+          ball.insert(v);
+        }
+      }
+      #ifdef DEBUG
+      fputs("Found ball.\n", stderr);
+      #endif
+
+      std::set<std::set<int>> shortestPaths;
+      auto predicate = [&ball = std::as_const(ball)](int u)
+      {
+        return ball.count(u);
+      };
+      for (int v = 0; v < vertexCnt; ++v) {
+        const std::set<std::set<int>> curPaths(
+            collectShortestPaths(myDijkstraOutput, predicate, v, quarterW, w));
+        shortestPaths.insert(curPaths.begin(), curPaths.end());
+      }
+      #ifdef DEBUG
+      fputs("Collected shortest paths.\n", stderr);
+      #endif
+
+      Graph<int> hittingSetInstance(vertexCnt + shortestPaths.size());
+      int pathIndex = vertexCnt;
+      for (auto p = shortestPaths.cbegin(); p != shortestPaths.cend();
+           ++p, ++pathIndex) {
+        for (const int u: *p) {
+          hittingSetInstance.addEdge(pathIndex, u);
+          hittingSetInstance.addEdge(u, pathIndex);
+        }
+      }
+      std::vector<int> hittingSet =
+        approximateHittingSet(vertexCnt, hittingSetInstance);
+      #ifdef DEBUG
+      fputs("Solved hitting set.\n", stderr);
+      #endif
+      hd = std::max(hd, hittingSet.size());
+    }
   }
 
   return hd;
