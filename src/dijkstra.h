@@ -7,6 +7,7 @@
 #include <vector>
 #include <set>
 #include <queue>
+#include <unordered_map>
 
 extern const int voidParent;
 
@@ -38,13 +39,14 @@ collectShortestPaths(const DijkstraOutput& output, Predicate predicate,
                      int start, int64_t rFrom, int64_t rTo)
 {
   const std::vector<int64_t>& distances = output.distances;
-  const std::vector<int>& parents = output.parents;
   const std::vector<std::vector<int>>& children = output.children;
   const size_t vertexCnt = distances.size();
+  std::unordered_map<int, std::set<int>> pathLookup;
 
   std::vector<bool> visited(vertexCnt, false);
   std::queue<int> Q;
   Q.push(start);
+  pathLookup[start] = {start};
   std::set<std::set<int>> paths;
 
   while (!Q.empty()) {
@@ -64,16 +66,14 @@ collectShortestPaths(const DijkstraOutput& output, Predicate predicate,
         continue;
       }
 
-      // FIXME: if parent is admissible, then just add me to his path
       if (rTo >= neighborDistance && neighborDistance > rFrom) {
-        std::set<int> path;
-        for (int endOfPath = neighbor; endOfPath != voidParent;
-             endOfPath = parents[endOfPath]) {
-          path.insert(endOfPath);
-        }
+        std::set<int> path(pathLookup[cur]);
+        path.insert(neighbor);
+        pathLookup[neighbor] = path;
         paths.insert(path);
       }
 
+      pathLookup.erase(cur);
       Q.push(neighbor);
     }
   }
