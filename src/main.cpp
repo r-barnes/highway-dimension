@@ -3,7 +3,8 @@
 
 #include <cstdio>
 
-enum class EXIT_CODES {
+// not enum class on purpose
+enum EXIT_CODES {
   OK, INVALID_INPUT, COULD_NOT_OPEN_FILE
 };
 
