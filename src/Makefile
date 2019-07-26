@@ -1,5 +1,5 @@
 CXX = g++
-CXXDEBUG =#-DDEBUG -g
+CXXDEBUG =#-g -DDEBUG
 CXXFLAGS = -std=c++17 -O2 -Wall -pedantic -Wextra $(CXXDEBUG)
 OBJECT_FILES = dijkstra.o highway-dimension.o hitting-set.o
 BIN_FILES = main.out

@@ -1,6 +1,5 @@
 #include "hitting-set.h"
 
-#include <unordered_set>
 #include <algorithm>
 
 struct Shooter

@@ -3,11 +3,11 @@
 
 #include "graph.h"
 
-#include <utility>
 #include <vector>
 #include <set>
 #include <queue>
 #include <unordered_map>
+#include <cstdint>
 
 extern const int voidParent;
 

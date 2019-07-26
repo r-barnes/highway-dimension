@@ -2,8 +2,7 @@
 #define __GRAPH__
 
 #include <vector>
-#include <utility>
-#include <cinttypes>
+#include <cstdint>
 
 struct WeightedEdge
 {

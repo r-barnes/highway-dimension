@@ -1,7 +1,6 @@
 #include "dijkstra.h"
 #include "graph.h"
 
-#include <climits>
 #include <queue>
 #ifdef DEBUG
 #include <cstdio>

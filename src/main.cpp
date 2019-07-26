@@ -2,6 +2,7 @@
 #include "highway-dimension.h"
 
 #include <cstdio>
+#include <cinttypes>
 
 // not enum class on purpose
 enum EXIT_CODES {

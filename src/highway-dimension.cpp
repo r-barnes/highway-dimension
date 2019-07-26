@@ -5,8 +5,8 @@
 #include <unordered_set>
 #include <vector>
 #include <algorithm>
-#include <cinttypes>
 #ifdef DEBUG
+#include <cinttypes>
 #include <cassert>
 #include <cstdio>
 #endif
