@@ -9,23 +9,17 @@
 #include <unordered_map>
 #include <cstdint>
 
-extern const int voidParent;
-
 /* Member `children` are children in shortest path tree.
  */
 struct DijkstraOutput
 {
   const std::vector<int64_t> distances;
-  const std::vector<int> parents;
   const std::vector<std::vector<int>> children;
 
-  DijkstraOutput(std::vector<int64_t>&& distances, std::vector<int>&& parents,
+  DijkstraOutput(std::vector<int64_t>&& distances,
                  std::vector<std::vector<int>>&& children);
 };
 
-/* Returns a pair of distances and parents. Parents with value `voidParent`
- * mean unreachable aside from `start`.
- */
 DijkstraOutput
 dijkstra(const Graph<WeightedEdge>& graph, const int start);
 
@@ -40,10 +34,8 @@ collectShortestPaths(const DijkstraOutput& output, Predicate predicate,
 {
   const std::vector<int64_t>& distances = output.distances;
   const std::vector<std::vector<int>>& children = output.children;
-  const size_t vertexCnt = distances.size();
   std::unordered_map<int, std::set<int>> pathLookup;
 
-  std::vector<bool> visited(vertexCnt, false);
   std::queue<int> Q;
   Q.push(start);
   pathLookup[start] = {start};
@@ -52,15 +44,12 @@ collectShortestPaths(const DijkstraOutput& output, Predicate predicate,
   while (!Q.empty()) {
     const int cur = Q.front();
     Q.pop();
-    visited[cur] = true;
 
     for (const int neighbor: children[cur]) {
-      if (visited[neighbor]) {
-        continue;
-      }
       if (!predicate(neighbor)) {
         continue;
       }
+
       const int64_t neighborDistance = distances[neighbor];
       if (neighborDistance > rTo) {
         continue;

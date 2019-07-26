@@ -9,10 +9,8 @@
 const int_fast64_t INF = INT64_C(1) << 61;
 
 DijkstraOutput::DijkstraOutput(std::vector<int64_t>&& distances,
-                               std::vector<int>&& parents,
                                std::vector<std::vector<int>>&& children)
-  : distances(std::move(distances)), parents(std::move(parents)),
-    children(std::move(children))
+  : distances(std::move(distances)), children(std::move(children))
 {
 }
 
@@ -43,7 +41,6 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start)
   const int vertexCnt = graph.vertexCnt;
   std::vector<int64_t> distances(vertexCnt, INF);
   std::vector<int> parents(vertexCnt, voidParent);
-  std::vector<std::vector<int>> children(vertexCnt);
   std::priority_queue<VertexDistance> Q;
   const int64_t initialDistance = 0;
   distances[start] = initialDistance;
@@ -61,15 +58,23 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start)
       if (distances[neighbor] > newDistance) {
         distances[neighbor] = newDistance;
         parents[neighbor] = curV;
-        children[curV].push_back(neighbor);
         Q.push({neighbor, newDistance});
       }
     }
   }
 
+  std::vector<std::vector<int>> children(vertexCnt);
+  for (int u = 0; u < vertexCnt; ++u) {
+    const int p = parents[u];
+    if (voidParent == p) {
+      continue;
+    }
+
+    children[p].push_back(u);
+  }
+
   #ifdef DEBUG
   fprintf(stderr, "Finished Dijkstra from %d.\n", start);
   #endif
-  return DijkstraOutput(std::move(distances), std::move(parents),
-                        std::move(children));
+  return DijkstraOutput(std::move(distances), std::move(children));
 }
