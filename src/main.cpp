@@ -28,7 +28,9 @@ main(int argc, char* argv[])
   }
 
   int N, M;
-  fscanf(inputFile, "%d%d", &N, &M);
+  if (2 != fscanf(inputFile, "%d%d", &N, &M)) {
+    fputs("Incorrect graph input.\n", stderr);
+  }
 
   Graph<WeightedEdge> G(N);
   #ifdef DEBUG
@@ -37,7 +39,9 @@ main(int argc, char* argv[])
   for (int i = 0; i < M; ++i) {
     int u, v;
     int64_t w;
-    fscanf(inputFile, "%d%d%" SCNd64, &u, &v, &w);
+    if (3 != fscanf(inputFile, "%d%d%" SCNd64, &u, &v, &w)) {
+      fputs("Incorrect edge input.\n", stderr);
+    }
     G.addEdge(u, {v, w});
     G.addEdge(v, {u, w});
   }
