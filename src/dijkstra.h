@@ -9,23 +9,17 @@
 #include <unordered_map>
 #include <cstdint>
 
-extern const int voidParent;
-
 /* Member `children` are children in shortest path tree.
  */
 struct DijkstraOutput
 {
   const std::vector<int64_t> distances;
-  const std::vector<int> parents;
   const std::vector<std::vector<int>> children;
 
-  DijkstraOutput(std::vector<int64_t>&& distances, std::vector<int>&& parents,
+  DijkstraOutput(std::vector<int64_t>&& distances,
                  std::vector<std::vector<int>>&& children);
 };
 
-/* Returns a pair of distances and parents. Parents with value `voidParent`
- * mean unreachable aside from `start`.
- */
 DijkstraOutput
 dijkstra(const Graph<WeightedEdge>& graph, const int start);
 
