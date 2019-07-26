@@ -41,6 +41,7 @@ dijkstraFromAllVertices(const Graph<WeightedEdge>& graph)
 
 /* Imho this does not work correctly.
  */
+[[deprecated]]
 int
 approximateSparseSPC(const Graph<WeightedEdge>& graph)
 {
@@ -73,9 +74,9 @@ approximateSparseSPC(const Graph<WeightedEdge>& graph)
     #endif
     const int64_t halfRadius = w / ratio;
     std::vector<int> localHubs(vertexCnt, 0);
-    std::set<std::set<int>> paths;
+    std::unordered_set<std::vector<bool>> paths;
     for (int u = 0; u < vertexCnt; ++u) {
-      const std::set<std::set<int>> curPaths(
+      const std::unordered_set<std::vector<bool>> curPaths(
           collectShortestPaths(dijkstraOutputs[u], predicate, u, halfRadius, w));
       paths.insert(curPaths.begin(), curPaths.end());
     }
@@ -107,11 +108,6 @@ approximateSparseSPC(const Graph<WeightedEdge>& graph)
     }
 
     int curH = *std::max_element(localHubs.begin(), localHubs.end());
-    #ifdef DEBUG
-    if (curH < 1) {
-      fputs("! Hub density is 0!", stderr);
-    }
-    #endif
     hd = std::max(hd, curH);
   }
 
@@ -161,13 +157,13 @@ approximateHd(const Graph<WeightedEdge>& graph)
       fputs("Found ball.\n", stderr);
       #endif
 
-      std::set<std::set<int>> shortestPaths;
+      std::unordered_set<std::vector<bool>> shortestPaths;
       auto predicate = [&ball = std::as_const(ball)](int u)
       {
         return ball.count(u);
       };
       for (int v = 0; v < vertexCnt; ++v) {
-        const std::set<std::set<int>> curPaths(
+        const std::unordered_set<std::vector<bool>> curPaths(
             collectShortestPaths(myDijkstraOutput, predicate, v, quarterW, w));
         shortestPaths.insert(curPaths.begin(), curPaths.end());
       }
@@ -179,9 +175,11 @@ approximateHd(const Graph<WeightedEdge>& graph)
       int pathIndex = vertexCnt;
       for (auto p = shortestPaths.cbegin(); p != shortestPaths.cend();
            ++p, ++pathIndex) {
-        for (const int u: *p) {
-          hittingSetInstance.addEdge(pathIndex, u);
-          hittingSetInstance.addEdge(u, pathIndex);
+        for (int u = 0; u < vertexCnt; ++u) {
+          if ((*p)[u]) {
+            hittingSetInstance.addEdge(pathIndex, u);
+            hittingSetInstance.addEdge(u, pathIndex);
+          }
         }
       }
       std::vector<int> hittingSet =

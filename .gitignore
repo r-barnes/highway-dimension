@@ -5,3 +5,4 @@
 *.test
 tags
 properties.sh
+no-commit
