@@ -4,7 +4,7 @@
 #include "graph.h"
 
 #include <vector>
-#include <unordered_set>
+#include <set>
 #include <queue>
 #include <unordered_map>
 #include <cstdint>
@@ -23,29 +23,25 @@ struct DijkstraOutput
 DijkstraOutput
 dijkstra(const Graph<WeightedEdge>& graph, const int start);
 
-/* Collects shortest paths with length (rFrom, rTo]. A path is represented as
- * a bitset.
- *
- * Only collects shortest paths, which satisfy `predicate`. Assumes `start`
- * always satisfies `predicate`.
+/* Collects shortest paths with length (rFrom, rTo]. Only collect shortest
+ * paths, which satisfy `predicate`. Assumes `start` always satisfies
+ * `predicate`.
  */
 template <typename Predicate>
-std::unordered_set<std::vector<bool>>
+std::set<std::set<int>>
 collectShortestPaths(const DijkstraOutput& output, Predicate predicate,
                      int start, int64_t rFrom, int64_t rTo)
 {
   const std::vector<int64_t>& distances = output.distances;
   const std::vector<std::vector<int>>& children = output.children;
   const size_t vertexCnt = distances.size();
-  std::unordered_map<int, std::vector<bool>> pathLookup;
+  std::unordered_map<int, std::set<int>> pathLookup;
 
   std::vector<bool> visited(vertexCnt, false);
   std::queue<int> Q;
   Q.push(start);
-  std::vector<bool> startBitset(vertexCnt, false);
-  startBitset[start] = 1;
-  pathLookup[start] = std::move(startBitset);
-  std::unordered_set<std::vector<bool>> paths;
+  pathLookup[start] = {start};
+  std::set<std::set<int>> paths;
 
   while (!Q.empty()) {
     const int cur = Q.front();
@@ -65,8 +61,8 @@ collectShortestPaths(const DijkstraOutput& output, Predicate predicate,
       }
 
       if (rTo >= neighborDistance && neighborDistance > rFrom) {
-        std::vector<bool> path(pathLookup[cur]);
-        path[neighbor] = true;
+        std::set<int> path(pathLookup[cur]);
+        path.insert(neighbor);
         pathLookup[neighbor] = path;
         paths.insert(path);
       }
