@@ -60,16 +60,17 @@ collectShortestPaths(const DijkstraOutput& output, Predicate predicate,
         continue;
       }
 
+      std::set<int> path(pathLookup[cur]);
+      path.insert(neighbor);
+      pathLookup[neighbor] = std::move(path);
+
       if (rTo >= neighborDistance && neighborDistance > rFrom) {
-        std::set<int> path(pathLookup[cur]);
-        path.insert(neighbor);
-        pathLookup[neighbor] = path;
-        paths.insert(path);
+        paths.insert(pathLookup[neighbor]);
       }
 
-      pathLookup.erase(cur);
       Q.push(neighbor);
     }
+    pathLookup.erase(cur);
   }
 
   return paths;
