@@ -2,7 +2,6 @@
 #include "hitting-set.h"
 #include "dijkstra.h"
 
-#include <unordered_set>
 #include <vector>
 #include <algorithm>
 #ifdef DEBUG
@@ -74,9 +73,9 @@ approximateSparseSPC(const Graph<WeightedEdge>& graph)
     #endif
     const int64_t halfRadius = w / ratio;
     std::vector<int> localHubs(vertexCnt, 0);
-    std::set<std::set<int>> paths;
+    std::unordered_set<std::vector<bool>> paths;
     for (int u = 0; u < vertexCnt; ++u) {
-      const std::set<std::set<int>> curPaths(
+      const std::unordered_set<std::vector<bool>> curPaths(
           collectShortestPaths(dijkstraOutputs[u], predicate, u, halfRadius, w));
       paths.insert(curPaths.begin(), curPaths.end());
     }
@@ -162,13 +161,13 @@ approximateHd(const Graph<WeightedEdge>& graph)
       fputs("Found ball.\n", stderr);
       #endif
 
-      std::set<std::set<int>> shortestPaths;
+      std::unordered_set<std::vector<bool>> shortestPaths;
       auto predicate = [&ball = std::as_const(ball)](int u)
       {
         return ball.count(u);
       };
       for (int v = 0; v < vertexCnt; ++v) {
-        const std::set<std::set<int>> curPaths(
+        const std::unordered_set<std::vector<bool>> curPaths(
             collectShortestPaths(myDijkstraOutput, predicate, v, quarterW, w));
         shortestPaths.insert(curPaths.begin(), curPaths.end());
       }
@@ -181,8 +180,10 @@ approximateHd(const Graph<WeightedEdge>& graph)
       for (auto p = shortestPaths.cbegin(); p != shortestPaths.cend();
            ++p, ++pathIndex) {
         for (const int u: *p) {
-          hittingSetInstance.addEdge(pathIndex, u);
-          hittingSetInstance.addEdge(u, pathIndex);
+          if (u) {
+            hittingSetInstance.addEdge(pathIndex, u);
+            hittingSetInstance.addEdge(u, pathIndex);
+          }
         }
       }
       std::vector<int> hittingSet =

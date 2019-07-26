@@ -4,7 +4,7 @@
 #include "graph.h"
 
 #include <vector>
-#include <set>
+#include <unordered_set>
 #include <queue>
 #include <unordered_map>
 #include <cstdint>
@@ -28,18 +28,21 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start);
  * `predicate`.
  */
 template <typename Predicate>
-std::set<std::set<int>>
+std::unordered_set<std::vector<bool>>
 collectShortestPaths(const DijkstraOutput& output, Predicate predicate,
                      int start, int64_t rFrom, int64_t rTo)
 {
   const std::vector<int64_t>& distances = output.distances;
   const std::vector<std::vector<int>>& children = output.children;
-  std::unordered_map<int, std::set<int>> pathLookup;
+  size_t vertexCnt = distances.size();
+  std::unordered_map<int, std::vector<bool>> pathLookup;
 
   std::queue<int> Q;
   Q.push(start);
-  pathLookup[start] = {start};
-  std::set<std::set<int>> paths;
+  std::vector<bool> startPath(vertexCnt, false);
+  startPath[start] = true;
+  pathLookup[start] = std::move(startPath);
+  std::unordered_set<std::vector<bool>> paths;
 
   while (!Q.empty()) {
     const int cur = Q.front();
@@ -55,8 +58,8 @@ collectShortestPaths(const DijkstraOutput& output, Predicate predicate,
         continue;
       }
 
-      std::set<int> path(pathLookup[cur]);
-      path.insert(neighbor);
+      std::vector<bool> path(pathLookup[cur]);
+      path[neighbor] = true;
       pathLookup[neighbor] = std::move(path);
 
       if (rTo >= neighborDistance && neighborDistance > rFrom) {
@@ -65,6 +68,7 @@ collectShortestPaths(const DijkstraOutput& output, Predicate predicate,
 
       Q.push(neighbor);
     }
+
     pathLookup.erase(cur);
   }
 
