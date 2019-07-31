@@ -39,9 +39,6 @@ dijkstraFromAllVertices(const Graph<WeightedEdge>& graph)
   return result;
 }
 
-/* Imho this does not work correctly.
- */
-[[deprecated]]
 int
 approximateSparseSPC(const Graph<WeightedEdge>& graph)
 {

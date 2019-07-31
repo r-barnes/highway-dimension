@@ -6,7 +6,7 @@
 #include <cstdio>
 #endif
 
-const int_fast64_t INF = INT64_C(1) << 61;
+const int64_t INF = INT64_C(1) << 61;
 
 DijkstraOutput::DijkstraOutput(std::vector<int64_t>&& distances,
                                std::vector<std::vector<int>>&& children)
