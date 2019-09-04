@@ -1,6 +1,6 @@
 # Data parser
 
-This folder contains a Julia module which converts a GTFS feed into a weighted graph.
+This folder contains a perl module which converts a GTFS feed into a weighted graph.
 
 ## Methodology
 
