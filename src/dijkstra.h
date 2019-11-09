@@ -14,9 +14,11 @@
 struct DijkstraOutput
 {
   const std::vector<int64_t> distances;
+  const std::vector<int> shortestPathCount;
   const std::vector<std::vector<int>> children;
 
   DijkstraOutput(std::vector<int64_t>&& distances,
+                 std::vector<int>&& shortestPathCount,
                  std::vector<std::vector<int>>&& children);
 };
 

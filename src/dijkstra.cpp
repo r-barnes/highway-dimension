@@ -9,8 +9,11 @@
 const int64_t INF = INT64_C(1) << 61;
 
 DijkstraOutput::DijkstraOutput(std::vector<int64_t>&& distances,
+                               std::vector<int>&& shortestPathCount,
                                std::vector<std::vector<int>>&& children)
-  : distances(std::move(distances)), children(std::move(children))
+  : distances(std::move(distances)),
+    shortestPathCount(std::move(shortestPathCount)),
+    children(std::move(children))
 {
 }
 
@@ -40,10 +43,12 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start)
   #endif
   const int vertexCnt = graph.vertexCnt;
   std::vector<int64_t> distances(vertexCnt, INF);
+  std::vector<int> shortestPathCount(vertexCnt, 0);
   std::vector<int> parents(vertexCnt, voidParent);
   std::priority_queue<VertexDistance> Q;
   const int64_t initialDistance = 0;
   distances[start] = initialDistance;
+  shortestPathCount[start] = 1;
   parents[start] = voidParent;
   Q.push({start, initialDistance});
 
@@ -52,13 +57,19 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start)
     Q.pop();
     const int curV = cur.vertex;
     const int64_t curD = cur.distance;
+    const int curC = shortestPathCount[curV];
     for (const WeightedEdge& e : graph[curV]) {
       const int neighbor = e.to;
+      int64_t& neighborDistance = distances[neighbor];
+      int& neighborCount = shortestPathCount[neighbor];
       const int64_t newDistance = curD + e.weight;
-      if (distances[neighbor] > newDistance) {
-        distances[neighbor] = newDistance;
+      if (neighborDistance > newDistance) {
+        neighborDistance = newDistance;
+        neighborCount = curC;
         parents[neighbor] = curV;
         Q.push({neighbor, newDistance});
+      } else if (neighborDistance == newDistance) {
+        neighborCount += curC;
       }
     }
   }
@@ -76,5 +87,6 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start)
   #ifdef DEBUG
   fprintf(stderr, "Finished Dijkstra from %d.\n", start);
   #endif
-  return DijkstraOutput(std::move(distances), std::move(children));
+  return DijkstraOutput(std::move(distances), std::move(shortestPathCount),
+                        std::move(children));
 }

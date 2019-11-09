@@ -58,6 +58,17 @@ approximateSparseSPC(const Graph<WeightedEdge>& graph)
   fputs("Ran Dijkstra from all vertices.\n", stderr);
   #endif
 
+  for (size_t u = 0; u < dijkstraOutputs.size(); ++u) {
+    for (size_t v = u + 1; v < dijkstraOutputs[u].shortestPathCount.size();
+         ++v) {
+      const int cnt = dijkstraOutputs[u].shortestPathCount[v];
+      if (cnt > 1) {
+        fprintf(stderr, "Shortest paths count between %ld and %ld: %d.\n",
+                u, v, cnt);
+      }
+    }
+  }
+
   int hd = 0;
 
   auto predicate = [](__attribute__((unused))int u)

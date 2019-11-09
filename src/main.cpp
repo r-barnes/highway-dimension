@@ -49,7 +49,7 @@ main(int argc, char* argv[])
   fputs("done\n", stderr);
   #endif
 
-  fprintf(outputFile, "%d %d %d\n", N, M, approximateHd(G));
+  fprintf(outputFile, "%d %d %d\n", N, M, approximateSparseSPC(G));
   fclose(inputFile);
   fclose(outputFile);
 }
