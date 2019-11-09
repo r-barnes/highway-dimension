@@ -2,22 +2,55 @@
 
 set -e -u
 
-PROPERTIES_FILE=properties.sh
 DATA_DIR=data
+GTFS_ZIP=gtfs.zip
 SRC_DIR=src
 IN_SUFFIX=.in
 OUT_SUFFIX=.out
 GTFS_CONVERTER=./gtfs-parser/gtfs-converter.pl
 BIN_FILE=./"${SRC_DIR}"/main.out
 
-if [ ! -f "${PROPERTIES_FILE}" ]; then
-  echo "No property file found."
-  exit 1
+usage() {
+  echo "Usage: $0: [-t] [-c] [-d]
+
+Arguments:
+  -t     skip testing
+  -c     skip compilation
+  -d     skip downloading data
+  "
+}
+
+skip_test_flag=0
+skip_compilation_flag=0
+skip_delete_flag=0
+while getopts tdh argname; do
+  case "${argname}" in
+    t)
+      skip_test_flag=1
+      ;;
+    c)
+      skip_compilation_flag=1
+      ;;
+    d)
+      skip_delete_flag=1
+      ;;
+    *|h)
+      usage
+      exit -1
+      ;;
+  esac
+done
+
+if [ "${skip_test_flag}" -ne 1 ]; then
+  make -C "${SRC_DIR}" "test"
+fi
+if [ "${skip_compilation_flag}" -ne 1 ]; then
+  make -C "${SRC_DIR}"
 fi
 
-# TODO: skip flag
-make -C "${SRC_DIR}" "test"
-make -C "${SRC_DIR}"
+feeds=$(find "${DATA_DIR}" -name "${GTFS_ZIP}")
+echo "${feeds}"
+exit 0
 
 ### GTFS conversion
 
@@ -35,5 +68,6 @@ for city_dir in "${DATA_DIR}"/*; do
     "${city_dir}"/"${city_name}${OUT_SUFFIX}"
 done
 
-# TODO: do not delete flag
-make -C "${SRC_DIR}" clean-all
+if [ "${skip_delete_flag}" -ne 1 ]; then
+  make -C "${SRC_DIR}" clean-all
+fi
