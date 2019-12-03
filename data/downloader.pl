@@ -10,10 +10,12 @@ use IO::Socket::SSL;
 use FindBin;
 
 my $API_KEY = '';
-my $HELP_MESSAGE = "Usage: $0 api_key";
+my $HELP_MESSAGE = "Usage: $0 api_key.\
+Downloaded files are saved to 'data/latest-feeds' folder.";
 
 if (@ARGV < 1) {
   print STDERR $HELP_MESSAGE, "\n";
+  exit 1;
 }
 
 $API_KEY = $ARGV[0];

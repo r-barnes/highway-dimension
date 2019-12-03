@@ -71,6 +71,10 @@ my $stop_times_header_i = CsvUtils::find_header_indices $stop_times_header,
 sub hms_to_seconds {
   my ($hms) = @_;
   my ($h, $m, $s) = split ':', $hms;
+
+  # sometimes stop_times.txt is missing arrival_time and departure_time
+  return undef unless (defined $h && defined $m && defined $s);
+
   return $h * 3600 + $m * 60 + $s;
 }
 
@@ -78,6 +82,14 @@ sub parse_line {
   my ($line) = @_;
   chomp $line;
   my @arr = split $GTFS_SEP, $line;
+  my $arrival_time =
+    hms_to_seconds($arr[$stop_times_header_i->{arrival_time}]);
+  my $departure_time =
+    hms_to_seconds($arr[$stop_times_header_i->{departure_time}]);
+
+  # react appropriately to invalid hms_to_seconds
+  return undef unless ($arrival_time && $departure_time);
+
   return {
     trip_id => $arr[$stop_times_header_i->{trip_id}],
     arrival_time => hms_to_seconds(
@@ -115,12 +127,14 @@ sub set_weight {
 }
 
 my $first_line = <$stop_times_fh>;
+# let's assume that first line is always valid
 my $prev_stop = parse_line $first_line;
 
 while (<$stop_times_fh>) {
   my $cur_stop = parse_line $_;
+  next unless $cur_stop;
 
-  if ($prev_stop->{trip_id} == $cur_stop->{trip_id}) {
+  if ($prev_stop->{trip_id} eq $cur_stop->{trip_id}) {
     my $prev_vertex =
       $stop_to_id{$parent_to_root_resolv{$prev_stop->{stop_id}}};
     my $cur_vertex = 
