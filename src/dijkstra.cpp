@@ -38,7 +38,7 @@ dijkstra(const Graph<WeightedEdge>& graph, const int start)
   #ifdef DEBUG
   fprintf(stderr, "Started Dijkstra from %d.\n", start);
   #endif
-  const int vertexCnt = graph.vertexCnt;
+  const int vertexCnt = graph.vertex_count();
   std::vector<int64_t> distances(vertexCnt, INF);
   std::vector<int> parents(vertexCnt, voidParent);
   std::priority_queue<VertexDistance> Q;

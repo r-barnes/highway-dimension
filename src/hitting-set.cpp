@@ -19,7 +19,7 @@ Shooter::operator<(const Shooter& s) const
 std::vector<int>
 approximateHittingSet(const int shooterCnt, const Graph<int>& G)
 {
-  const int targetCnt = G.vertexCnt - shooterCnt;
+  const int targetCnt = G.vertex_count() - shooterCnt;
   std::vector<Shooter> pq(shooterCnt);
   std::vector<int> realDegrees(shooterCnt);
   std::vector<bool> covered(targetCnt, false);

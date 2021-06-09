@@ -2,12 +2,13 @@
 #include "hitting-set.h"
 #include "dijkstra.h"
 
+#include <algorithm>
+#include <omp.h>
 #include <unordered_set>
 #include <vector>
-#include <algorithm>
 #ifdef DEBUG
-#include <cinttypes>
 #include <cassert>
+#include <cinttypes>
 #include <cstdio>
 #endif
 
@@ -15,8 +16,7 @@ std::unordered_set<int64_t>
 collectDistinctWeights(const Graph<WeightedEdge>& graph)
 {
   std::unordered_set<int64_t> result;
-  const int vertexCnt = graph.vertexCnt;
-  for (int u = 0; u < vertexCnt; ++u) {
+  for (int64_t u = 0; u < graph.vertex_count(); ++u) {
     for (const WeightedEdge& e : graph[u]) {
       result.insert(e.weight);
     }
@@ -31,10 +31,17 @@ collectDistinctWeights(const Graph<WeightedEdge>& graph)
 std::vector<DijkstraOutput>
 dijkstraFromAllVertices(const Graph<WeightedEdge>& graph)
 {
-  const int vertexCnt = graph.vertexCnt;
+  std::vector<std::vector<DijkstraOutput>> results(omp_get_max_threads());
+  #pragma omp parallel for shared(results)
+  for (int u = 0; u < graph.vertex_count(); ++u) {
+    results.at(omp_get_thread_num()).push_back(dijkstra(graph, u));
+  }
+
   std::vector<DijkstraOutput> result;
-  for (int u = 0; u < vertexCnt; ++u) {
-    result.push_back(dijkstra(graph, u));
+  for(auto &x: results){
+    result.insert(result.end(), make_move_iterator(x.begin()), make_move_iterator(x.end()));
+    x.clear();
+    x.shrink_to_fit();
   }
   return result;
 }
@@ -46,7 +53,7 @@ approximateSparseSPC(const Graph<WeightedEdge>& graph)
   #ifdef DEBUG
   fputs("Approximating sparse shortest path cover.\n", stderr);
   #endif
-  const int vertexCnt = graph.vertexCnt;
+  const auto vertexCnt = graph.vertex_count();
   const std::unordered_set<int64_t> edgeWeights = collectDistinctWeights(graph);
   #ifdef DEBUG
   fputs("Found distinct edge weights.\n", stderr);
@@ -123,7 +130,7 @@ approximateHd(const Graph<WeightedEdge>& graph)
   fputs("Approximating highway dimension.\n", stderr);
   #endif
   static const int64_t ratio = 4;
-  const int vertexCnt = graph.vertexCnt;
+  const auto vertexCnt = graph.vertex_count();
   // FIXME: no need to store these
   const std::unordered_set<int64_t> edgeWeights = collectDistinctWeights(graph);
   #ifdef DEBUG

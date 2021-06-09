@@ -1,12 +1,12 @@
 #include "graph.h"
 #include "hitting-set.h"
 
-#include <cstdio>
-#include <utility>
-#include <vector>
 #include <cassert>
+#include <cstdio>
 #include <random>
 #include <unordered_set>
+#include <utility>
+#include <vector>
 
 /* Pick a small enough, because runtime is square of this.
  */

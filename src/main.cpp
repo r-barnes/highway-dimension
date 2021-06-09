@@ -1,8 +1,10 @@
 #include "graph.h"
 #include "highway-dimension.h"
 
-#include <cstdio>
 #include <cinttypes>
+#include <cstdio>
+#include <fstream>
+#include <iostream>
 
 // not enum class on purpose
 enum EXIT_CODES {
@@ -12,35 +14,34 @@ enum EXIT_CODES {
 int
 main(int argc, char* argv[])
 {
-  if (argc < 3) {
-    fprintf(stderr, "Usage: %s graph.in output.out\n", argv[0]);
+  if (argc != 3) {
+    std::cerr<<"Usage: "<<argv[0]<<" graph.in output.out"<<std::endl;
     return EXIT_CODES::INVALID_INPUT;
   }
-  FILE* inputFile = fopen(argv[1], "r");
-  if (!inputFile) {
-    fputs("Could not open input graph.\n", stderr);
-    return EXIT_CODES::COULD_NOT_OPEN_FILE;
-  }
-  FILE* outputFile = fopen(argv[2], "w+");
-  if (!outputFile) {
-    fputs("Could not open output file.\n", stderr);
+
+  std::ifstream inputFile(argv[1]);
+  if (!inputFile.good()) {
+    std::cerr<<"Could not open input graph."<<std::endl;
     return EXIT_CODES::COULD_NOT_OPEN_FILE;
   }
 
-  int N, M;
-  if (2 != fscanf(inputFile, "%d%d", &N, &M)) {
-    fputs("Incorrect graph input.\n", stderr);
+  std::ofstream outputFile(argv[2]);
+  if (!outputFile.good()) {
+    std::cerr<<"Could not open output file."<<std::endl;
+    return EXIT_CODES::COULD_NOT_OPEN_FILE;
   }
 
-  Graph<WeightedEdge> G(N);
+  Graph<WeightedEdge> G;
   #ifdef DEBUG
   fputs("Processing graph.....", stderr);
   #endif
-  for (int i = 0; i < M; ++i) {
-    int u, v;
-    int64_t w;
-    if (3 != fscanf(inputFile, "%d%d%" SCNd64, &u, &v, &w)) {
-      fputs("Incorrect edge input.\n", stderr);
+  int u;
+  int v;
+  int64_t w;
+  int64_t edge_count = 0;
+  while(inputFile>>u>>v>>w){
+    if(++edge_count%1000000==0){
+      std::cerr<<"Read "<<edge_count<<" edges"<<std::endl;
     }
     G.addEdge(u, {v, w});
     G.addEdge(v, {u, w});
@@ -49,7 +50,7 @@ main(int argc, char* argv[])
   fputs("done\n", stderr);
   #endif
 
-  fprintf(outputFile, "%d %d %d\n", N, M, approximateHd(G));
-  fclose(inputFile);
-  fclose(outputFile);
+  outputFile<<G.vertex_count()<<" "<<G.edge_count()<<" "<<approximateHd(G)<<std::endl;
+
+  return 0;
 }

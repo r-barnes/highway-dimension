@@ -3,18 +3,18 @@
 
 #include "graph.h"
 
-#include <vector>
-#include <set>
-#include <queue>
-#include <unordered_map>
 #include <cstdint>
+#include <queue>
+#include <set>
+#include <unordered_map>
+#include <vector>
 
 /* Member `children` are children in shortest path tree.
  */
 struct DijkstraOutput
 {
-  const std::vector<int64_t> distances;
-  const std::vector<std::vector<int>> children;
+  std::vector<int64_t> distances;
+  std::vector<std::vector<int>> children;
 
   DijkstraOutput(std::vector<int64_t>&& distances,
                  std::vector<std::vector<int>>&& children);
